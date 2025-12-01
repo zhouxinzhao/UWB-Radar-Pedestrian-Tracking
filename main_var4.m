@@ -1,4 +1,4 @@
-function results = main_var2(opts)
+function results = main_var4(opts)
 clc
 load('Bg_CIR_VAR.mat');
 load('Dyn_CIR_VAR.mat');
@@ -11,7 +11,7 @@ opts = resolve_tracking_options(opts);
 if ~isempty(opts.rngSeed)
     rng(opts.rngSeed);
 end
-quarterIdx = 2;
+quarterIdx = 4;
 
 %% prediction labels
 diff_ToF01 = abs(Dyn_real_ToF01-ToF_TRx01);
@@ -119,11 +119,11 @@ Y_train = Y_train_tmp(RDidx(1:trainIDX_tmp),:);
 X_val = X_train_tmp(:,:,:,RDidx(trainIDX_tmp+1:end));
 Y_val = Y_train_tmp(RDidx(trainIDX_tmp+1:end),:);
 
-if opts.forceRetrain || ~isfile(['ConvNet_Var2.mat'])
-    ConvNet_Var2 = CIR_CNN_CIRVar_Tst(X_train,Y_train,X_val,Y_val,"VAR");
-    save ConvNet_Var2.mat ConvNet_Var2
+if opts.forceRetrain || ~isfile(['ConvNet_Var4.mat'])
+    ConvNet_Var4 = CIR_CNN_CIRVar_Tst(X_train,Y_train,X_val,Y_val,"VAR");
+    save ConvNet_Var4.mat ConvNet_Var4
 else
-    load(['ConvNet_Var2.mat']);
+    load(['ConvNet_Var4.mat']);
 end
 
 %% test
@@ -158,12 +158,12 @@ Y_test12 = label12(tstSet12,:);
 Y_test14 = label14(tstSet14,:);
 Y_test24 = label24(tstSet24,:);
 
-Y_pred01 = predict(ConvNet_Var2,X_test01);
-Y_pred02 = predict(ConvNet_Var2,X_test02);
-Y_pred04 = predict(ConvNet_Var2,X_test04);
-Y_pred12 = predict(ConvNet_Var2,X_test12);
-Y_pred14 = predict(ConvNet_Var2,X_test14);
-Y_pred24 = predict(ConvNet_Var2,X_test24);
+Y_pred01 = predict(ConvNet_Var4,X_test01);
+Y_pred02 = predict(ConvNet_Var4,X_test02);
+Y_pred04 = predict(ConvNet_Var4,X_test04);
+Y_pred12 = predict(ConvNet_Var4,X_test12);
+Y_pred14 = predict(ConvNet_Var4,X_test14);
+Y_pred24 = predict(ConvNet_Var4,X_test24);
 
 SampDiff = abs(re_SampTime(2)-re_SampTime(1));
 for i = 1:num_tst01
@@ -185,7 +185,7 @@ for i = 1:num_tst24
     ToF_est24(i) = SampDiff*Y_pred24(i,1)+re_SampTime(1)+ToF_TRx24;
 end
 %% ToF error distribution
-Y_pred_val_tmp = predict(ConvNet_Var2,X_val);
+Y_pred_val_tmp = predict(ConvNet_Var4,X_val);
 DiffY_val = SampDiff*(Y_val-Y_pred_val_tmp);
 DiffY_val = double(DiffY_val);
 pd = fitdist(DiffY_val,'tLocationScale');

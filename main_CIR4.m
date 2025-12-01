@@ -1,4 +1,4 @@
-function results = main_var2(opts)
+function results = main_CIR4(opts)
 clc
 load('Bg_CIR_VAR.mat');
 load('Dyn_CIR_VAR.mat');
@@ -11,7 +11,7 @@ opts = resolve_tracking_options(opts);
 if ~isempty(opts.rngSeed)
     rng(opts.rngSeed);
 end
-quarterIdx = 2;
+quarterIdx = 4;
 
 %% prediction labels
 diff_ToF01 = abs(Dyn_real_ToF01-ToF_TRx01);
@@ -47,12 +47,12 @@ for i = 1:numel(diff_ToF24)
 end
 
 %% test / train split by data quantity
-[trainSet01, tstSet01] = split_train_test_by_quarter(size(Dyn_var_CIR01, 1), quarterIdx);
-[trainSet02, tstSet02] = split_train_test_by_quarter(size(Dyn_var_CIR02, 1), quarterIdx);
-[trainSet04, tstSet04] = split_train_test_by_quarter(size(Dyn_var_CIR04, 1), quarterIdx);
-[trainSet12, tstSet12] = split_train_test_by_quarter(size(Dyn_var_CIR12, 1), quarterIdx);
-[trainSet14, tstSet14] = split_train_test_by_quarter(size(Dyn_var_CIR14, 1), quarterIdx);
-[trainSet24, tstSet24] = split_train_test_by_quarter(size(Dyn_var_CIR24, 1), quarterIdx);
+[trainSet01, tstSet01] = split_train_test_by_quarter(size(Dyn_re_CIR01, 1), quarterIdx);
+[trainSet02, tstSet02] = split_train_test_by_quarter(size(Dyn_re_CIR02, 1), quarterIdx);
+[trainSet04, tstSet04] = split_train_test_by_quarter(size(Dyn_re_CIR04, 1), quarterIdx);
+[trainSet12, tstSet12] = split_train_test_by_quarter(size(Dyn_re_CIR12, 1), quarterIdx);
+[trainSet14, tstSet14] = split_train_test_by_quarter(size(Dyn_re_CIR14, 1), quarterIdx);
+[trainSet24, tstSet24] = split_train_test_by_quarter(size(Dyn_re_CIR24, 1), quarterIdx);
 toCol = @(v) reshape(v, [], 1);
 trainSet01 = toCol(trainSet01); tstSet01 = toCol(tstSet01);
 trainSet02 = toCol(trainSet02); tstSet02 = toCol(tstSet02);
@@ -76,33 +76,33 @@ trainIDX14 = numel(trainSet14);
 trainIDX24 = numel(trainSet24);
 for  i = 1:trainIDX01
     idx = trainSet01(i);
-    X_train_tmp01(:,1,1,i) = mat2gray(abs(Dyn_var_CIR01(idx,:))');
-    X_train_tmp01(:,2,1,i) = mat2gray(abs(Bg_var_CIR01)');
+    X_train_tmp01(:,1,1,i) = mat2gray(abs(Dyn_re_CIR01(idx,:))');
+    X_train_tmp01(:,2,1,i) = mat2gray(abs(Bg_re_CIR01)');
 end
 for  i = 1:trainIDX02
     idx = trainSet02(i);
-    X_train_tmp02(:,1,1,i) = mat2gray(abs(Dyn_var_CIR02(idx,:))');
-    X_train_tmp02(:,2,1,i) = mat2gray(abs(Bg_var_CIR02)');
+    X_train_tmp02(:,1,1,i) = mat2gray(abs(Dyn_re_CIR02(idx,:))');
+    X_train_tmp02(:,2,1,i) = mat2gray(abs(Bg_re_CIR02)');
 end
 for  i = 1:trainIDX04
     idx = trainSet04(i);
-    X_train_tmp04(:,1,1,i) = mat2gray(abs(Dyn_var_CIR04(idx,:))');
-    X_train_tmp04(:,2,1,i) = mat2gray(abs(Bg_var_CIR04)');
+    X_train_tmp04(:,1,1,i) = mat2gray(abs(Dyn_re_CIR04(idx,:))');
+    X_train_tmp04(:,2,1,i) = mat2gray(abs(Bg_re_CIR04)');
 end
 for  i = 1:trainIDX12
     idx = trainSet12(i);
-    X_train_tmp12(:,1,1,i) = mat2gray(abs(Dyn_var_CIR12(idx,:))');
-    X_train_tmp12(:,2,1,i) = mat2gray(abs(Bg_var_CIR12)');
+    X_train_tmp12(:,1,1,i) = mat2gray(abs(Dyn_re_CIR12(idx,:))');
+    X_train_tmp12(:,2,1,i) = mat2gray(abs(Bg_re_CIR12)');
 end
 for  i = 1:trainIDX14
     idx = trainSet14(i);
-    X_train_tmp14(:,1,1,i) = mat2gray(abs(Dyn_var_CIR14(idx,:))');
-    X_train_tmp14(:,2,1,i) = mat2gray(abs(Bg_var_CIR14)');
+    X_train_tmp14(:,1,1,i) = mat2gray(abs(Dyn_re_CIR14(idx,:))');
+    X_train_tmp14(:,2,1,i) = mat2gray(abs(Bg_re_CIR14)');
 end
 for  i = 1:trainIDX24
     idx = trainSet24(i);
-    X_train_tmp24(:,1,1,i) = mat2gray(abs(Dyn_var_CIR24(idx,:))');
-    X_train_tmp24(:,2,1,i) = mat2gray(abs(Bg_var_CIR24)');
+    X_train_tmp24(:,1,1,i) = mat2gray(abs(Dyn_re_CIR24(idx,:))');
+    X_train_tmp24(:,2,1,i) = mat2gray(abs(Bg_re_CIR24)');
 end
 X_train_tmp = cat(4,X_train_tmp01,X_train_tmp02,X_train_tmp04,X_train_tmp12,X_train_tmp14,X_train_tmp24);
 Y_train_tmp = [label01(trainSet01,:);label02(trainSet02,:);label04(trainSet04,:);label12(trainSet12,:);label14(trainSet14,:);label24(trainSet24,:)];
@@ -119,37 +119,37 @@ Y_train = Y_train_tmp(RDidx(1:trainIDX_tmp),:);
 X_val = X_train_tmp(:,:,:,RDidx(trainIDX_tmp+1:end));
 Y_val = Y_train_tmp(RDidx(trainIDX_tmp+1:end),:);
 
-if opts.forceRetrain || ~isfile(['ConvNet_Var2.mat'])
-    ConvNet_Var2 = CIR_CNN_CIRVar_Tst(X_train,Y_train,X_val,Y_val,"VAR");
-    save ConvNet_Var2.mat ConvNet_Var2
+if opts.forceRetrain || ~isfile(['ConvNet_CIR4.mat'])
+    ConvNet_CIR4 = CIR_CNN_CIRVar_Tst(X_train,Y_train,X_val,Y_val,"CIR");
+    save ConvNet_CIR4.mat ConvNet_CIR4
 else
-    load(['ConvNet_Var2.mat']);
+    load(['ConvNet_CIR4.mat']);
 end
 
 %% test
 for i = 1:num_tst01
-    X_test01(:,1,1,i) = mat2gray(abs(Dyn_var_CIR01(tstSet01(i),:))');
-    X_test01(:,2,1,i) = mat2gray(abs(Bg_var_CIR01)');
+    X_test01(:,1,1,i) = mat2gray(abs(Dyn_re_CIR01(tstSet01(i),:))');
+    X_test01(:,2,1,i) = mat2gray(abs(Bg_re_CIR01)');
 end
 for i = 1:num_tst02
-    X_test02(:,1,1,i) = mat2gray(abs(Dyn_var_CIR02(tstSet02(i),:))');
-    X_test02(:,2,1,i) = mat2gray(abs(Bg_var_CIR02)');
+    X_test02(:,1,1,i) = mat2gray(abs(Dyn_re_CIR02(tstSet02(i),:))');
+    X_test02(:,2,1,i) = mat2gray(abs(Bg_re_CIR02)');
 end
 for i = 1:num_tst04
-    X_test04(:,1,1,i) = mat2gray(abs(Dyn_var_CIR04(tstSet04(i),:))');
-    X_test04(:,2,1,i) = mat2gray(abs(Bg_var_CIR04)');
+    X_test04(:,1,1,i) = mat2gray(abs(Dyn_re_CIR04(tstSet04(i),:))');
+    X_test04(:,2,1,i) = mat2gray(abs(Bg_re_CIR04)');
 end
 for i = 1:num_tst12
-    X_test12(:,1,1,i) = mat2gray(abs(Dyn_var_CIR12(tstSet12(i),:))');
-    X_test12(:,2,1,i) = mat2gray(abs(Bg_var_CIR12)');
+    X_test12(:,1,1,i) = mat2gray(abs(Dyn_re_CIR12(tstSet12(i),:))');
+    X_test12(:,2,1,i) = mat2gray(abs(Bg_re_CIR12)');
 end
 for i = 1:num_tst14
-    X_test14(:,1,1,i) = mat2gray(abs(Dyn_var_CIR14(tstSet14(i),:))');
-    X_test14(:,2,1,i) = mat2gray(abs(Bg_var_CIR14)');
+    X_test14(:,1,1,i) = mat2gray(abs(Dyn_re_CIR14(tstSet14(i),:))');
+    X_test14(:,2,1,i) = mat2gray(abs(Bg_re_CIR14)');
 end
 for i = 1:num_tst24
-    X_test24(:,1,1,i) = mat2gray(abs(Dyn_var_CIR24(tstSet24(i),:))');
-    X_test24(:,2,1,i) = mat2gray(abs(Bg_var_CIR24)');
+    X_test24(:,1,1,i) = mat2gray(abs(Dyn_re_CIR24(tstSet24(i),:))');
+    X_test24(:,2,1,i) = mat2gray(abs(Bg_re_CIR24)');
 end
 Y_test01 = label01(tstSet01,:);
 Y_test02 = label02(tstSet02,:);
@@ -157,13 +157,16 @@ Y_test04 = label04(tstSet04,:);
 Y_test12 = label12(tstSet12,:);
 Y_test14 = label14(tstSet14,:);
 Y_test24 = label24(tstSet24,:);
-
-Y_pred01 = predict(ConvNet_Var2,X_test01);
-Y_pred02 = predict(ConvNet_Var2,X_test02);
-Y_pred04 = predict(ConvNet_Var2,X_test04);
-Y_pred12 = predict(ConvNet_Var2,X_test12);
-Y_pred14 = predict(ConvNet_Var2,X_test14);
-Y_pred24 = predict(ConvNet_Var2,X_test24);
+%%
+tic
+Y_pred01 = predict(ConvNet_CIR4,X_test01);
+Y_pred02 = predict(ConvNet_CIR4,X_test02);
+Y_pred04 = predict(ConvNet_CIR4,X_test04);
+Y_pred12 = predict(ConvNet_CIR4,X_test12);
+Y_pred14 = predict(ConvNet_CIR4,X_test14);
+Y_pred24 = predict(ConvNet_CIR4,X_test24);
+t_CNN = toc;
+t_CNN = t_CNN/(num_tst01+num_tst02+num_tst04+num_tst12+num_tst14+num_tst24)*6*1000; % ms
 
 SampDiff = abs(re_SampTime(2)-re_SampTime(1));
 for i = 1:num_tst01
@@ -185,12 +188,11 @@ for i = 1:num_tst24
     ToF_est24(i) = SampDiff*Y_pred24(i,1)+re_SampTime(1)+ToF_TRx24;
 end
 %% ToF error distribution
-Y_pred_val_tmp = predict(ConvNet_Var2,X_val);
+Y_pred_val_tmp = predict(ConvNet_CIR4,X_val);
 DiffY_val = SampDiff*(Y_val-Y_pred_val_tmp);
 DiffY_val = double(DiffY_val);
 pd = fitdist(DiffY_val,'tLocationScale');
 
-%% ToF resampling for tracking
 Time_pair01 = Dyn_re_tUWB01(tstSet01)';
 Time_pair02 = Dyn_re_tUWB02(tstSet02)';
 Time_pair04 = Dyn_re_tUWB04(tstSet04)';
