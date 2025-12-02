@@ -1,4 +1,4 @@
-function ParticleFilter4Nodes(ToF_est10,ToF_est12,ToF_est14,ToF_est20,ToF_est24,ToF_est40,Pos_MU,Pos_Nodes,tUWB,pd)
+function [x_est, disERR] = ParticleFilter4Nodes(ToF_est10,ToF_est12,ToF_est14,ToF_est20,ToF_est24,ToF_est40,Pos_MU,Pos_Nodes,tUWB,pd)
 Pos_Node0 = Pos_Nodes(1,:)';
 Pos_Node1 = Pos_Nodes(2,:)';
 Pos_Node2 = Pos_Nodes(3,:)';

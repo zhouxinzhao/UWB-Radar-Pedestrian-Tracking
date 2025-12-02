@@ -1,8 +1,17 @@
-function main_CIR1
-clear;clc
+function results = main_CIR1(opts)
+clc
 load('Bg_CIR_VAR.mat');
 load('Dyn_CIR_VAR.mat');
 load('AnchorPos.mat')
+
+if nargin < 1
+    opts = struct;
+end
+opts = resolve_tracking_options(opts);
+if ~isempty(opts.rngSeed)
+    rng(opts.rngSeed);
+end
+quarterIdx = 1;
 
 %% prediction labels
 diff_ToF01 = abs(Dyn_real_ToF01-ToF_TRx01);
@@ -38,12 +47,19 @@ for i = 1:numel(diff_ToF24)
 end
 
 %% train
-trainSet01 = Dyn_re_tUWB01(Dyn_re_tUWB01<73.8);
-trainSet02 = Dyn_re_tUWB02(Dyn_re_tUWB02<73.8);
-trainSet04 = Dyn_re_tUWB04(Dyn_re_tUWB04<73.8);
-trainSet12 = Dyn_re_tUWB12(Dyn_re_tUWB12<73.8);
-trainSet14 = Dyn_re_tUWB14(Dyn_re_tUWB14<73.8);
-trainSet24 = Dyn_re_tUWB24(Dyn_re_tUWB24<73.8);
+[trainSet01, tstSet01] = split_train_test_by_quarter(size(Dyn_re_CIR01, 1), quarterIdx);
+[trainSet02, tstSet02] = split_train_test_by_quarter(size(Dyn_re_CIR02, 1), quarterIdx);
+[trainSet04, tstSet04] = split_train_test_by_quarter(size(Dyn_re_CIR04, 1), quarterIdx);
+[trainSet12, tstSet12] = split_train_test_by_quarter(size(Dyn_re_CIR12, 1), quarterIdx);
+[trainSet14, tstSet14] = split_train_test_by_quarter(size(Dyn_re_CIR14, 1), quarterIdx);
+[trainSet24, tstSet24] = split_train_test_by_quarter(size(Dyn_re_CIR24, 1), quarterIdx);
+toCol = @(v) reshape(v, [], 1);
+trainSet01 = toCol(trainSet01); tstSet01 = toCol(tstSet01);
+trainSet02 = toCol(trainSet02); tstSet02 = toCol(tstSet02);
+trainSet04 = toCol(trainSet04); tstSet04 = toCol(tstSet04);
+trainSet12 = toCol(trainSet12); tstSet12 = toCol(tstSet12);
+trainSet14 = toCol(trainSet14); tstSet14 = toCol(tstSet14);
+trainSet24 = toCol(trainSet24); tstSet24 = toCol(tstSet24);
 
 trainIDX01 = numel(trainSet01);
 trainIDX02 = numel(trainSet02);
@@ -52,41 +68,51 @@ trainIDX12 = numel(trainSet12);
 trainIDX14 = numel(trainSet14);
 trainIDX24 = numel(trainSet24);
 for  i = 1:trainIDX01
-    X_train_tmp01(:,1,1,i) = mat2gray(abs(Dyn_re_CIR01(i,:))');
+    idx = trainSet01(i);
+    X_train_tmp01(:,1,1,i) = mat2gray(abs(Dyn_re_CIR01(idx,:))');
     X_train_tmp01(:,2,1,i) = mat2gray(abs(Bg_re_CIR01)');
 end
 for  i = 1:trainIDX02
-    X_train_tmp02(:,1,1,i) = mat2gray(abs(Dyn_re_CIR02(i,:))');
+    idx = trainSet02(i);
+    X_train_tmp02(:,1,1,i) = mat2gray(abs(Dyn_re_CIR02(idx,:))');
     X_train_tmp02(:,2,1,i) = mat2gray(abs(Bg_re_CIR02)');
 end
 for  i = 1:trainIDX04
-    X_train_tmp04(:,1,1,i) = mat2gray(abs(Dyn_re_CIR04(i,:))');
+    idx = trainSet04(i);
+    X_train_tmp04(:,1,1,i) = mat2gray(abs(Dyn_re_CIR04(idx,:))');
     X_train_tmp04(:,2,1,i) = mat2gray(abs(Bg_re_CIR04)');
 end
 for  i = 1:trainIDX12
-    X_train_tmp12(:,1,1,i) = mat2gray(abs(Dyn_re_CIR12(i,:))');
+    idx = trainSet12(i);
+    X_train_tmp12(:,1,1,i) = mat2gray(abs(Dyn_re_CIR12(idx,:))');
     X_train_tmp12(:,2,1,i) = mat2gray(abs(Bg_re_CIR12)');
 end
 for  i = 1:trainIDX14
-    X_train_tmp14(:,1,1,i) = mat2gray(abs(Dyn_re_CIR14(i,:))');
+    idx = trainSet14(i);
+    X_train_tmp14(:,1,1,i) = mat2gray(abs(Dyn_re_CIR14(idx,:))');
     X_train_tmp14(:,2,1,i) = mat2gray(abs(Bg_re_CIR14)');
 end
 for  i = 1:trainIDX24
-    X_train_tmp24(:,1,1,i) = mat2gray(abs(Dyn_re_CIR24(i,:))');
+    idx = trainSet24(i);
+    X_train_tmp24(:,1,1,i) = mat2gray(abs(Dyn_re_CIR24(idx,:))');
     X_train_tmp24(:,2,1,i) = mat2gray(abs(Bg_re_CIR24)');
 end
 X_train_tmp = cat(4,X_train_tmp01,X_train_tmp02,X_train_tmp04,X_train_tmp12,X_train_tmp14,X_train_tmp24);
-Y_train_tmp = [label01(1:trainIDX01,:);label02(1:trainIDX02,:);label04(1:trainIDX04,:);label12(1:trainIDX12,:);label14(1:trainIDX14,:);label24(1:trainIDX24,:)];
+Y_train_tmp = [label01(trainSet01,:);label02(trainSet02,:);label04(trainSet04,:);label12(trainSet12,:);label14(trainSet14,:);label24(trainSet24,:)];
 % shuffle
 trainIDX = trainIDX01+trainIDX02+trainIDX04+trainIDX12+trainIDX14+trainIDX24;
 RDidx = randperm(trainIDX);
-trainIDX_tmp = floor(trainIDX*0.85);
+trainIDX_tmp = floor(trainIDX*opts.trainFraction);
+if trainIDX_tmp >= trainIDX
+    trainIDX_tmp = trainIDX-1;
+end
+trainIDX_tmp = max(trainIDX_tmp,1);
 X_train = X_train_tmp(:,:,:,RDidx(1:trainIDX_tmp));
 Y_train = Y_train_tmp(RDidx(1:trainIDX_tmp),:);
 X_val = X_train_tmp(:,:,:,RDidx(trainIDX_tmp+1:end));
 Y_val = Y_train_tmp(RDidx(trainIDX_tmp+1:end),:);
 
-if ~isfile(['ConvNet_CIR1.mat'])
+if opts.forceRetrain || ~isfile(['ConvNet_CIR1.mat'])
     ConvNet_CIR1 = CIR_CNN_CIRVar_Tst(X_train,Y_train,X_val,Y_val,"CIR");
     save ConvNet_CIR1.mat ConvNet_CIR1
 else
@@ -94,12 +120,12 @@ else
 end
 
 %% test
-CIR_tmp01 = Dyn_re_CIR01(trainIDX01+1:end,:);
-CIR_tmp02 = Dyn_re_CIR02(trainIDX02+1:end,:);
-CIR_tmp04 = Dyn_re_CIR04(trainIDX04+1:end,:);
-CIR_tmp12 = Dyn_re_CIR12(trainIDX12+1:end,:);
-CIR_tmp14 = Dyn_re_CIR14(trainIDX14+1:end,:);
-CIR_tmp24 = Dyn_re_CIR24(trainIDX24+1:end,:);
+CIR_tmp01 = Dyn_re_CIR01(tstSet01,:);
+CIR_tmp02 = Dyn_re_CIR02(tstSet02,:);
+CIR_tmp04 = Dyn_re_CIR04(tstSet04,:);
+CIR_tmp12 = Dyn_re_CIR12(tstSet12,:);
+CIR_tmp14 = Dyn_re_CIR14(tstSet14,:);
+CIR_tmp24 = Dyn_re_CIR24(tstSet24,:);
 [num_tst01,~] = size(CIR_tmp01);
 [num_tst02,~] = size(CIR_tmp02);
 [num_tst04,~] = size(CIR_tmp04);
@@ -130,12 +156,12 @@ for i = 1:num_tst24
     X_test24(:,1,1,i) = mat2gray(abs(CIR_tmp24(i,:))');
     X_test24(:,2,1,i) = mat2gray(abs(Bg_re_CIR24)');
 end
-Y_test01 = label01(trainIDX01+1:end,:);
-Y_test02 = label02(trainIDX02+1:end,:);
-Y_test04 = label04(trainIDX04+1:end,:);
-Y_test12 = label12(trainIDX12+1:end,:);
-Y_test14 = label14(trainIDX14+1:end,:);
-Y_test24 = label24(trainIDX24+1:end,:);
+Y_test01 = label01(tstSet01,:);
+Y_test02 = label02(tstSet02,:);
+Y_test04 = label04(tstSet04,:);
+Y_test12 = label12(tstSet12,:);
+Y_test14 = label14(tstSet14,:);
+Y_test24 = label24(tstSet24,:);
 
 Y_pred01 = predict(ConvNet_CIR1,X_test01);
 Y_pred02 = predict(ConvNet_CIR1,X_test02);
@@ -176,28 +202,29 @@ DiffY_val = double(DiffY_val);
 pd = fitdist(DiffY_val,'tLocationScale');
 
 %% ToF resampling for tracking
-Time_pair01 = Dyn_re_tUWB01(trainIDX01+1:end)';
-Time_pair02 = Dyn_re_tUWB02(trainIDX02+1:end)';
-Time_pair04 = Dyn_re_tUWB04(trainIDX04+1:end)';
-Time_pair12 = Dyn_re_tUWB12(trainIDX12+1:end)';
-Time_pair14 = Dyn_re_tUWB14(trainIDX14+1:end)';
-Time_pair24 = Dyn_re_tUWB24(trainIDX24+1:end)';
+Time_pair01 = Dyn_re_tUWB01(tstSet01)';
+Time_pair02 = Dyn_re_tUWB02(tstSet02)';
+Time_pair04 = Dyn_re_tUWB04(tstSet04)';
+Time_pair12 = Dyn_re_tUWB12(tstSet12)';
+Time_pair14 = Dyn_re_tUWB14(tstSet14)';
+Time_pair24 = Dyn_re_tUWB24(tstSet24)';
 
-tst_MU01 = Dyn_re_MU01(trainIDX01+1:end,:);
-tst_MU02 = Dyn_re_MU02(trainIDX02+1:end,:);
-tst_MU04 = Dyn_re_MU04(trainIDX04+1:end,:);
-tst_MU12 = Dyn_re_MU12(trainIDX12+1:end,:);
-tst_MU14 = Dyn_re_MU14(trainIDX14+1:end,:);
-tst_MU24 = Dyn_re_MU24(trainIDX24+1:end,:);
+tst_MU01 = Dyn_re_MU01(tstSet01,:);
+tst_MU02 = Dyn_re_MU02(tstSet02,:);
+tst_MU04 = Dyn_re_MU04(tstSet04,:);
+tst_MU12 = Dyn_re_MU12(tstSet12,:);
+tst_MU14 = Dyn_re_MU14(tstSet14,:);
+tst_MU24 = Dyn_re_MU24(tstSet24,:);
 
 resamp4tracking
 
 %% four nodes, input format: ToF_est10,ToF_est12,ToF_est14,ToF_est20,ToF_est24,ToF_est40
-ParticleFilter4Nodes(ToF_est10_new,ToF_est12_new,ToF_est14_new,ToF_est20_new,ToF_est24_new,ToF_est40_new,Sel_MU_new,AnchorPos,TIME_reshape,pd);
+[x_est, disERR] = ParticleFilter4Nodes(ToF_est10_new,ToF_est12_new,ToF_est14_new,ToF_est20_new,ToF_est24_new,ToF_est40_new,Sel_MU_new,AnchorPos,TIME_reshape,pd);
 
-end
+%% aggregate results for downstream batch scripts
+results.time = TIME_reshape(1:end-1)';
+results.estimated_position = x_est;
+results.ground_truth = Sel_MU_new(1:end-1,1:2);
+results.error = disERR(:);
 
-function [m, b] = fitLaplace(x)
-m = median(x);
-b = mean(abs(x-m)); 
 end

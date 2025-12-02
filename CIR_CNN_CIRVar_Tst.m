@@ -1,6 +1,7 @@
 function ConvNet = CIR_CNN_CIRVar_Tst(X_train,Y_train,X_val,Y_val,feature)
 [numBin,numSeries,numChannel,numTrain] = size(X_train);
-if feature=="CIR" || feature=="Var"
+featureLower = lower(string(feature));
+if featureLower=="cir" || featureLower=="var"
     lgraph = layerGraph();
     tempLayers = [
         imageInputLayer([numBin,numSeries,numChannel],"Name","imageinput")
@@ -85,7 +86,7 @@ if feature=="CIR" || feature=="Var"
     lgraph = connectLayers(lgraph,"batchnorm_10","addition_3/in1");
     lgraph = connectLayers(lgraph,"batchnorm_11","addition_3/in2");
 else
-    
+    error('Unsupported feature type: %s. Expected ''CIR'' or ''VAR''.', feature);
 end
 
 %% parameters
